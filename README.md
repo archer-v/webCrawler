@@ -8,7 +8,7 @@ Returned response is a array of records containing:
  - Response status of this url
  - Content length
  - Content type
- - Additional page parsing data (in this example it just count pages html tags)
+ - Additional page parsing data (in this example it just counts pages html tags)
 
 Service accepts two env configuration parameters 
  - WEBCRAWLER_HTTPPORT (default 8001)
