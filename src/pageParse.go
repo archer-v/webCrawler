@@ -6,12 +6,12 @@ import (
 )
 
 type PageData struct {
-	Elements []TagItem `json: "elements"`
+	Elements []TagItem `json:"elements"`
 }
 
 type TagItem struct {
-	TagName  string 	`json: "tag-name"`
-	Count    int		`json: "count"`
+	TagName string `json:"tag-name"`
+	Count   int    `json:"count"`
 }
 
 //PageParseTagsCounter is the example of the page data parser
