@@ -1,7 +1,7 @@
-# WebCrawler
+# webCrawler
 Simple multithreaded web crawler written in golang.
 
-The service gets list of urls (JSON array) as a POST request, loads all urls content in concurrent threads, and returns the pages metadata as a combined JSON response 
+The service receives list of urls (JSON array) from a POST request, loads all urls content in concurrent threads, and returns the pages metadata as a combined JSON response 
 
 Returned response is a array of records containing:
  - Url
