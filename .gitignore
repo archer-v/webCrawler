@@ -1,0 +1,12 @@
+# Binaries for programs and plugins
+*.iml
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+.idea
+*.log
+*.sum
+
