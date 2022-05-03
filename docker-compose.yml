@@ -1,0 +1,12 @@
+version: "2.0"
+services:
+   webCrawler:
+     ports:
+       - "8001:8001"
+     image: mandalorian-one/webcrawler
+     container_name: webcrawler
+     restart: always
+     environment:
+        - WEBCRAWLER_HTTPPORT=8001
+        - WEBCRAWLER_WORKERS=20
+

@@ -5,8 +5,11 @@
 
 # Test binary, built with `go test -c`
 *.test
+.test_coverage.txt
 
 .idea
 *.log
 *.sum
 
+build
+distr
