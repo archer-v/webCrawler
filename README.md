@@ -29,7 +29,7 @@ Response example:
     "url": "http://www.example1.com/",
     "meta": {
       "status": 200,
-      "content-type": "text\/html",
+      "content-type": "text/html",
       "content-length": 605
     },
     "data": {
@@ -63,3 +63,11 @@ Response example:
   // ...
 ]
 ```
+
+You can implement your own page parser by implementing your own parsing handler
+```
+func(r io.Reader) (data interface{}, err error) {
+
+}
+```
+see ``func PageParseTagsCounter(r io.Reader) (data *PageData, err error)`` as an example
