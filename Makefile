@@ -18,8 +18,6 @@ ifeq (${TAG},)
     TAG:=devel
 endif
 
-#-tags netgo and -linkmode external -w -extldflags "-static" flags Force the use of the Go implementation of net dependencies and static linking (need to work in alpine docker images with CGO_ENABLED build flag set
-# see details https://stackoverflow.com/questions/36279253/go-compiled-binary-wont-run-in-an-alpine-docker-container-on-ubuntu-host
 LDFLAGS = -a -ldflags '-X main.gitTag=${TAG} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH} -X main.build=${BUILDVERSION}'
 
 .PHONY: help clean dep build install uninstall
@@ -35,7 +33,6 @@ dep: ## Download the dependencies.
 
 build: dep ## Build executable.
 	mkdir -p ./build
-#	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o build/${PROJECTNAME} ./src
 	CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o build/${PROJECTNAME} ./src
 
 clean: ## Clean build directory.
