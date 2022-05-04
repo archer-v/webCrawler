@@ -16,8 +16,8 @@ const (
 )
 
 type workersPool struct {
-	maxWorkers 	int
-	workers     int
+	maxWorkers int
+	workers    int
 	sync.Mutex
 }
 
@@ -25,8 +25,8 @@ type PageParser func(r io.Reader) (data interface{}, err error)
 
 //CountingReader is a reader Proxy counting up bytes
 type CountingReader struct {
-	reader 	io.Reader
-	count 	int
+	reader io.Reader
+	count  int
 }
 
 func (cr *CountingReader) Read(b []byte) (int, error) {
@@ -49,9 +49,9 @@ type CrawlerTask struct {
 //todo add the task timeout
 //Crawler defines parameters and the statement for the crawler service
 type Crawler struct {
-	l           *log.Logger
+	l *log.Logger
 	//urlQueue define the queue of urls to process
-	urlQueue    UrlsQueue
+	urlQueue UrlsQueue
 	//tasks define the active tasks list
 	tasks       map[TaskId]*CrawlerTask
 	state       int
@@ -69,10 +69,10 @@ func NewCrawler(l *log.Logger, maxWorkers int, pageParser PageParser) Crawler {
 		l:       l,
 		state:   CrawlerStateNew,
 		getWork: make(chan bool),
-		workers: 	workersPool{
+		workers: workersPool{
 			maxWorkers: maxWorkers,
 		},
-		tasks: 		make(map[TaskId]*CrawlerTask),
+		tasks:      make(map[TaskId]*CrawlerTask),
 		pageParser: pageParser,
 	}
 }
@@ -82,16 +82,19 @@ func (c *Crawler) run() {
 	c.l.Printf("Crawler is started, current queue size: %v", c.urlQueue.Len())
 
 	for {
-		<- c.getWork
+		<-c.getWork
 		c.workers.Lock()
-		if c.state == CrawlerStateShutdown && c.workers.workers == 0 {
+		c.Lock()
+		state := c.state
+		c.Unlock()
+		if state == CrawlerStateShutdown && c.workers.workers == 0 {
 			c.l.Printf("Crawler is stopped")
 			c.wg.Done()
 			c.workers.Unlock()
 			return
 		}
 
-		for c.workers.maxWorkers - c.workers.workers > 0 {
+		for c.workers.maxWorkers-c.workers.workers > 0 {
 			taskId, url, err := c.urlQueue.Get()
 			if err != nil {
 				break
@@ -136,12 +139,11 @@ func (c *Crawler) crawlerWorker(taskId *TaskId, url string) {
 	}
 
 	c.getWork <- true
-	return
 }
 
 //processUrl download and parse the document by url
 //returns downloaded page info (PageInfo) or error
-func (c *Crawler) processUrl(url string, parser func(r io.Reader) (interface{}, error)) (result PageInfo, err error){
+func (c *Crawler) processUrl(url string, parser func(r io.Reader) (interface{}, error)) (result PageInfo, err error) {
 
 	//todo add get timeout
 	resp, err := http.Get(url)
@@ -182,9 +184,9 @@ func (c *Crawler) Add(urls []string, resultChan chan []PageInfo) (err error) {
 	taskId := c.taskCounter
 
 	c.tasks[taskId] = &CrawlerTask{
-		TaskId: taskId,
+		TaskId:     taskId,
 		UrlRemains: len(urls),
-		Result: []PageInfo{},
+		Result:     []PageInfo{},
 		resultChan: resultChan,
 	}
 	c.Unlock()
@@ -211,7 +213,9 @@ func (c *Crawler) Stop() {
 		return
 	}
 	c.l.Printf("Crawler shutdown is in progress...")
+	c.Lock()
 	c.state = CrawlerStateShutdown
+	c.Unlock()
 	c.getWork <- true
 }
 
