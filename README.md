@@ -86,5 +86,5 @@ see ``func PageParseTagsCounter(r io.Reader) (data *PageData, err error)`` as an
 $ git clone https://github.com/mandalorian-one/webCrawler
 $ make build
 $ docker-compose up -d
-$ docker-compose run --rm app ./app
+$ docker-compose run --rm app /build/app
 ```
