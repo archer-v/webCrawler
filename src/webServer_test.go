@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/phayes/freeport"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"testing"
+
+	"github.com/phayes/freeport"
 )
 
 func TestWebServer(t *testing.T) {
@@ -23,14 +24,14 @@ func TestWebServer(t *testing.T) {
 		port,
 		log.New(os.Stdout, "HTTP ", log.LstdFlags),
 		[]WebServerRoute{
-		{"/", func(res http.ResponseWriter, req *http.Request) {
-			res.WriteHeader(http.StatusOK)
-			_, err := res.Write([]byte(pattern))
-			if err != nil {
-				t.Fatalf("can't prepare response")
-			}
-		}},
-	})
+			{"/", func(res http.ResponseWriter, req *http.Request) {
+				res.WriteHeader(http.StatusOK)
+				_, err := res.Write([]byte(pattern))
+				if err != nil {
+					t.Fatalf("can't prepare response")
+				}
+			}},
+		})
 
 	t.Run("Webserver start", func(t *testing.T) {
 		err := WebServer.Run()

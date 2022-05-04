@@ -14,13 +14,13 @@ import (
 
 //WebServerRoute stores uri path and the appropriate handler
 type WebServerRoute struct {
-	path 			string
+	path    string
 	handler func(resp http.ResponseWriter, req *http.Request)
 }
 
 //WebServer stores
 type WebServer struct {
-	l *log.Logger
+	l      *log.Logger
 	server *http.Server
 }
 

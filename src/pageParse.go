@@ -1,8 +1,9 @@
 package main
 
 import (
-	"golang.org/x/net/html"
 	"io"
+
+	"golang.org/x/net/html"
 )
 
 type PageData struct {

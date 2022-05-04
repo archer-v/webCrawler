@@ -49,7 +49,7 @@ func ProcessWebRequest(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data, ok := <- resultChan
+	data, ok := <-resultChan
 	if !ok {
 		e := "the channel is closed unexpectedly by crawler"
 		crawlerLogger.Printf(e)
@@ -111,7 +111,7 @@ func main() {
 	//wait for signal and perform the graceful shutdown
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	<- sig
+	<-sig
 
 	crawler.Stop()
 	crawler.Wait()

@@ -11,7 +11,7 @@ import (
 
 func TestCrawler(t *testing.T) {
 
-	pageParser := func (r io.Reader) (data interface{}, err error) {
+	pageParser := func(r io.Reader) (data interface{}, err error) {
 		return PageParseTagsCounter(r)
 	}
 
@@ -39,7 +39,7 @@ func TestCrawler(t *testing.T) {
 	t.Run("Waiting for tasks finished", func(t *testing.T) {
 		countDown := 2
 		for countDown > 0 {
-			pageInfo, ok := <- resultChan
+			pageInfo, ok := <-resultChan
 			if !ok {
 				t.Fatalf("the channel is closed unexpectedly by crawler")
 			}
@@ -57,10 +57,10 @@ func TestCrawler(t *testing.T) {
 func TestProcessUrl(t *testing.T) {
 
 	type testCase struct {
-		url 				string
-		httpCode 			int
-		nilContentLength 	bool
-		ContentType     	string
+		url              string
+		httpCode         int
+		nilContentLength bool
+		ContentType      string
 	}
 
 	testCases := []testCase{
@@ -93,7 +93,7 @@ func TestProcessUrl(t *testing.T) {
 		if result.Meta.Status != testCase.httpCode {
 			t.Fatalf("Wrong response status %v for url: %v", result.Meta.Status, testCase.url)
 		}
-		if (result.Meta.ContentLength == nil) != testCase.nilContentLength  {
+		if (result.Meta.ContentLength == nil) != testCase.nilContentLength {
 			t.Fatalf("Wrong Content-Length for url: %v", testCase.url)
 		}
 

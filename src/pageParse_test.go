@@ -7,8 +7,8 @@ import (
 )
 
 type pageParseTestCase struct {
-	html 		string
-	items       []TagItem
+	html  string
+	items []TagItem
 }
 
 func TestPageParse(t *testing.T) {
@@ -16,14 +16,14 @@ func TestPageParse(t *testing.T) {
 	cases := []pageParseTestCase{
 		{`<html><head></head><body><p>Test:</p><ul><li><a href="one">One</a></li></ul><p><a href="two">Two</a></p><div><p>The end</p></div></body>`,
 			[]TagItem{
-			{"p", 3},
-			{"ul", 1},
-			{"li", 1},
-			{"a", 2},
-			{"div", 1},
-			{"html", 1},
-			{"head", 1},
-			{"body", 1},
+				{"p", 3},
+				{"ul", 1},
+				{"li", 1},
+				{"a", 2},
+				{"div", 1},
+				{"html", 1},
+				{"head", 1},
+				{"body", 1},
 			},
 		},
 		{``,
@@ -36,7 +36,7 @@ func TestPageParse(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		t.Run("Case " + strconv.Itoa(i), func(t *testing.T) {
+		t.Run("Case "+strconv.Itoa(i), func(t *testing.T) {
 			data, err := PageParseTagsCounter(strings.NewReader(c.html))
 			if err != nil {
 				t.Fatalf("Expected error %v", err)
@@ -52,7 +52,7 @@ func TestPageParse(t *testing.T) {
 						break
 					}
 				}
-				if ! found {
+				if !found {
 					t.Fatalf("Count of tag '%v' is wrong", e.TagName)
 				}
 			}
