@@ -1,74 +1,64 @@
-PROJECTPATH:=$(shell pwd)
-PROJECTNAME:=$(shell basename "${PROJECTPATH}")
-PROJECTNAMELC:=$(shell echo "${PROJECTNAME}" | tr '[:upper:]' '[:lower:]')
-BUILDPATH:=${PROJECTPATH}/src
-DISTRPATH:=${PROJECTPATH}/distr
-DISTRBUILDPATH:=${PROJECTPATH}/distbuild
-BUILDVERSION:=$(shell dd if=/dev/urandom bs=1 count=4 2>/dev/null | hexdump -e '1/1 "%u"')
-BUILDTIMESTAMP:=$(shell date +"%Y-%m-%d_%H%M%S")
-BUILDIMAGE:=${PROJECTNAME}_${BUILDTIMESTAMP}_${BUILDVERSION}.tar.gz
-CURIMAGE:=${PROJECTNAME}.tar.gz
-GOARCH:=amd64
+#!/usr/bin/make
+# Makefile readme (ru): <http://linux.yaroslavl.ru/docs/prog/gnu_make_3-79_russian_manual.html>
+# Makefile readme (en): <https://www.gnu.org/software/make/manual/html_node/index.html#SEC_Contents>
 
-COMMIT:=$(shell git rev-parse --short HEAD)
-BRANCH:=$(shell git rev-parse --abbrev-ref HEAD)
-TAG:=$(shell git describe --tags |cut -d- -f1)
+SHELL = /bin/sh
+
+DOCKER_BIN = $(shell command -v docker 2> /dev/null)
+DC_BIN = $(shell command -v docker-compose 2> /dev/null)
+DC_RUN_ARGS = --rm --user "$(shell id -u):$(shell id -g)"
+APP_DIR = $(notdir $(CURDIR))
+APP_NAME:=$(shell echo "${APP_DIR}" | tr '[:upper:]' '[:lower:]')
+
+COMMIT = $(shell git rev-parse --short HEAD)
+BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+TAG = $(shell git describe --tags |cut -d- -f1)
+BUILDVERSION = $(shell dd if=/dev/urandom bs=1 count=4 2>/dev/null | hexdump -e '1/1 "%u"')
 
 ifeq (${TAG},)
     TAG:=devel
 endif
 
-LDFLAGS = -a -ldflags '-X main.gitTag=${TAG} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH} -X main.build=${BUILDVERSION}'
+LDFLAGS = '-X main.gitTag=${TAG} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH} -X main.build=${BUILDVERSION}'
 
-.PHONY: help clean dep build install uninstall
+.PHONY : help build fmt lint gotest test cover shell image clean
+.DEFAULT_GOAL : help
+.SILENT : test shell
 
-.DEFAULT_GOAL := help
+# This will output the help for each task. thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
+help: ## Show this help
+	@printf "\033[33m%s:\033[0m\n" 'Available commands'
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[32m%-11s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-help: ## Display this help screen.
-	@echo "Makefile available targets:"
-	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  * \033[36m%-15s\033[0m %s\n", $$1, $$2}'
-
-dep: ## Download the dependencies.
-	go mod download
-
-build: dep ## Build executable.
+build: ## Build app binary file
 	mkdir -p ./build
-	CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o build/${PROJECTNAME} ./src
+	$(DC_BIN) run $(DC_RUN_ARGS) --no-deps app go mod download
+	$(DC_BIN) run $(DC_RUN_ARGS) --no-deps app go build -a -ldflags=$(LDFLAGS) -o /build/app /src/src
 
-clean: ## Clean build directory.
-	rm -f ./build/${PROJECTNAME}
-	rmdir ./build
+fmt: ## Run source code formatter tools
+	$(DC_BIN) run $(DC_RUN_ARGS) --no-deps app sh -c 'GO111MODULE=off go get golang.org/x/tools/cmd/goimports && $$GOPATH/bin/goimports -d -w .'
+	$(DC_BIN) run $(DC_RUN_ARGS) --no-deps app gofmt -s -w -d .
 
-#golangci-lint and gosec must be installed, see details:
-#https://golangci-lint.run/usage/install/#local-installation
-#https://github.com/securego/gosec
-lint: dep ## Lint the source files
-	golangci-lint run --timeout 5m -E golint
-	gosec -quiet ./...
+lint: ## Run app linters
+	$(DOCKER_BIN) run --rm -t -v "$(shell pwd):/app" -w /app golangci/golangci-lint:v1.24-alpine golangci-lint run -v
 
-test: dep ## Run tests
-	go test -race -p 1 -timeout 300s -coverprofile=.test_coverage.txt ./... && \
-	go tool cover -func=.test_coverage.txt | tail -n1 | awk '{print "Total test coverage: " $$3}'
-	@rm .test_coverage.txt
+gotest: ## Run app tests
+	$(DC_BIN) run $(DC_RUN_ARGS) app go test -v -race ./...
 
-distro: build ## Create distro tar package with precombiled binary
-	mkdir -p $(DISTRBUILDPATH)
-	mkdir -p $(DISTRPATH)
-	cp build/${PROJECTNAME} $(DISTRBUILDPATH)
-	cd $(DISTRBUILDPATH) && tar -c . | gzip > $(DISTRPATH)/$(BUILDIMAGE)
-	rm -r $(DISTRBUILDPATH)
-	rm -f "$(DISTRPATH)/$(CURIMAGE)"
-	cd $(DISTRPATH) && ln -s $(BUILDIMAGE) $(CURIMAGE)
-	echo "Distro build was completed, the distributive package was saved to ${DISTRPATH}/${CURIMAGE}"
+test: lint gotest ## Run app tests and linters
+	@printf "\n   \e[30;42m %s \033[0m\n\n" 'All tests passed!';
 
-docker-build: distro ## Build docker image
-	docker build -t mandalorian-one/${PROJECTNAMELC}:latest -t mandalorian-one/${PROJECTNAMELC}:${TAG} .
-	docker image prune --force --filter label=stage=intermediate
+cover: ## Run app tests with coverage report
+	$(DC_BIN) run $(DC_RUN_ARGS) app sh -c 'go test -race -covermode=atomic -coverprofile /tmp/cp.out ./... && go tool cover -html=/tmp/cp.out -o ./coverage.html'
+	-sensible-browser ./coverage.html && sleep 2 && rm -f ./coverage.html
 
-docker-image: docker-build ## Save docker image to file
-	rm -f ./$(DISTRPATH)/*.docker.tar
-	docker save -o $(DISTRPATH)/${PROJECTNAMELC}:${TAG}.docker.tar mandalorian-one/${PROJECTNAMELC}:latest
+shell: ## Start shell into container with golang
+	$(DC_BIN) run $(DC_RUN_ARGS) app sh
 
-#deploy: docker-build  ##build application and upload docker image to the private repo
-#	docker tag mandalorian-one/${PROJECTNAMELC}:${TAG} my-private-docker-storage/mandalorian-one/${PROJECTNAMELC}
-#	docker push my-priavate-docker-storage/mandalorian-one/${PROJECTNAMELC}
+image: ## Build docker image with app
+	$(DOCKER_BIN) build -f ./Dockerfile -t $(APP_NAME):local .
+	@printf "\n   \e[30;42m %s \033[0m\n\n" 'Now you can use image like `docker run --rm $(APP_NAME):local ...`';
+
+clean: ## Make clean
+	$(DC_BIN) down -v -t 1
+	$(DOCKER_BIN) rmi $(APP_NAME):local -f
