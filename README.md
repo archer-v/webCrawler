@@ -10,14 +10,14 @@ Returned response is a array of records containing:
  - Content type
  - Additional page parsing data (in this example it just counts pages html tags)
 
-## Options
+#### Options
 
 Service accepts two env configuration parameters 
  - WEBCRAWLER_HTTPPORT (default 8001)
  - WEBCRAWLER_WORKERS (default 10)
 
 
-## Request example
+#### Request example
 
 ```js
 [
@@ -27,7 +27,7 @@ Service accepts two env configuration parameters
 ]
 ```
 
-## Response example
+#### Response example
 
 ```js
 [
@@ -70,7 +70,7 @@ Service accepts two env configuration parameters
 ]
 ```
 
-## Page parser
+#### Page parser
 
 You can implement your own page parser by implementing your own parsing handler
 ```
@@ -80,10 +80,10 @@ func(r io.Reader) (data interface{}, err error) {
 ```
 see ``func PageParseTagsCounter(r io.Reader) (data *PageData, err error)`` as an example
 
-## Startup
+#### Startup
 
 ```bash
-$ git clone ...
+$ git clone https://github.com/mandalorian-one/webCrawler
 $ make build
 $ docker-compose up -d
 $ docker-compose run --rm app ./app
