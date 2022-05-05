@@ -19,5 +19,4 @@ services:
       - ./:/src:cached
       - ./build:/build:cached
       - ./go.mod:/src/go.mod
-      - ./go.sum:/src/go.sum
       - tmp-data:/tmp:cached
