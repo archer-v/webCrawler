@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mandalorian-one/webCrawler.svg?branch=main)](https://travis-ci.org/mandalorian-one/webCrawler)
+
 # webCrawler
 Simple boilerplate multithreaded web crawler written in golang.
 
