@@ -16,7 +16,7 @@ type TagItem struct {
 }
 
 //PageParseTagsCounter is the example of the page data parser
-//it reads page data from the Reader and count the html tags count of each type
+//it reads page data from the Reader and counts the html tags of each type
 func PageParseTagsCounter(r io.Reader) (data *PageData, err error) {
 
 	var items []TagItem
