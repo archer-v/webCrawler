@@ -12,7 +12,7 @@ APP_NAME:=$(shell echo "${APP_DIR}" | tr '[:upper:]' '[:lower:]')
 
 COMMIT = $(shell git rev-parse --short HEAD)
 BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
-TAG = $(shell git describe --tags |cut -d- -f1)
+TAG = $(shell git describe --tags 2>/dev/null | cut -d- -f1)
 BUILDVERSION = $(shell dd if=/dev/urandom bs=1 count=4 2>/dev/null | hexdump -e '1/1 "%u"')
 
 ifeq (${TAG},)
@@ -32,8 +32,7 @@ help: ## Show this help
 
 build: ## Build app binary file
 	mkdir -p ./build
-	$(DC_BIN) run $(DC_RUN_ARGS) --no-deps app go mod download
-	$(DC_BIN) run $(DC_RUN_ARGS) --no-deps app go build -a -ldflags=$(LDFLAGS) -o /build/app /src/src
+	$(DC_BIN) run $(DC_RUN_ARGS) --no-deps app sh -c "go mod download && go build -a -ldflags=$(LDFLAGS) -o /build/app /src/src"
 
 fmt: ## Run source code formatter tools
 	$(DC_BIN) run $(DC_RUN_ARGS) --no-deps app sh -c 'GO111MODULE=off go get golang.org/x/tools/cmd/goimports && $$GOPATH/bin/goimports -d -w .'
