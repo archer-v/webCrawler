@@ -1,4 +1,4 @@
-module webCrawler
+module github.com/mandalorian-one/webCrawler
 
 go 1.14
 
