@@ -1,5 +1,5 @@
 # webCrawler
-Simple multithreaded web crawler written in golang.
+Simple boilerplate multithreaded web crawler written in golang.
 
 The service receives list of urls (JSON array) from a POST request, loads all urls content in concurrent threads, and returns the pages metadata as a combined JSON response 
 
@@ -8,7 +8,7 @@ Returned response is a array of records containing:
  - Response status of this url
  - Content length
  - Content type
- - Additional page parsing data (in this example it just counts pages html tags)
+ - Additional page parsing data (in this example it just counts html tags)
 
 #### Options
 
@@ -83,7 +83,7 @@ see ``func PageParseTagsCounter(r io.Reader) (data *PageData, err error)`` as an
 #### Startup
 
 ```bash
-$ git clone https://github.com/mandalorian-one/webCrawler
+$ git clone https://github.com/mandalorian-one/webCrawler.git
 $ make build
 $ docker-compose run --rm app /build/app
 ```
