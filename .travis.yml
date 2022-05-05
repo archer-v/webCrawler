@@ -16,9 +16,9 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - sudo apt-get install realpath -y
-  - docker-compose build
-  - docker-compose up -d
-  - docker ps
+#  - docker-compose build
+#  - docker-compose up -d
+#  - docker ps
 #  - chmod +x ./scripts/*.sh
 #  - go mod download
 #  - go mod verify
